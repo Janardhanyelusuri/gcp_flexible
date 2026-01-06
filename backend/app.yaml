@@ -21,7 +21,7 @@ network:
 env_variables:
   ENVIRONMENT: dev
   LOG_LEVEL: INFO
-  GCP_PROJECT_ID: REPLACE_WITH_YOUR_PROJECT_ID
+  GCP_PROJECT_ID: semiotic-runner-483110-p1
 
 liveness_check:
   path: /api/health
