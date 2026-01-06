@@ -1,0 +1,12 @@
+{
+  "name": "frontend-service",
+  "version": "2.0.0",
+  "description": "Frontend service for containerized microservices",
+  "scripts": {
+    "start": "echo 'Static files served by nginx'",
+    "build": "echo 'No build step required for static HTML'"
+  },
+  "keywords": ["frontend", "microservices", "nginx"],
+  "author": "",
+  "license": "ISC"
+}
