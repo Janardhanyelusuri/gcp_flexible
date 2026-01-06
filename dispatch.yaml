@@ -1,0 +1,11 @@
+# Path-based routing configuration
+# Routes API requests to backend service, everything else to frontend
+
+dispatch:
+  # Backend API routes - all /api/* requests go to backend service
+  - url: "*/api/*"
+    service: backend
+
+  # Frontend routes - everything else goes to default (frontend) service
+  - url: "*/*"
+    service: default
