@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Containerized Microservices App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .env-banner {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .env-dev, .env-development { background: #FFA500; }
+        .env-qa, .env-staging { background: #4169E1; }
+        .env-prod, .env-production { background: #228B22; }
+        .env-unknown { background: #808080; }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #856404;
+            display: none;
+        }
+        
+        .warning.show {
+            display: block;
+        }
+        
+        .status {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .value {
+            color: #2d3748;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .success {
+            color: #48bb78;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #f56565;
+            font-weight: bold;
+        }
+        
+        .loading {
+            color: #4299e1;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #response {
+            margin-top: 20px;
+            padding: 20px;
+            background: #edf2f7;
+            border-radius: 10px;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        #response.show {
+            display: block;
+        }
+        
+        .response-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        pre {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #48bb78;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .info-box {
+            background: #e6fffa;
+            border-left: 4px solid #38b2ac;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .info-box strong {
+            color: #234e52;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="envBanner" class="env-banner env-unknown">
+            <span id="envText">Checking environment...</span>
+            <span class="spinner"></span>
+        </div>
+
+        <h1>🚀 Containerized Microservices <span class="badge">v2.0</span></h1>
+        <p class="subtitle">App Engine Flexible + Docker + Artifact Registry</p>
+        
+        <div id="warningBox" class="warning">
+            ⚠️ <strong>Warning:</strong> You are in the <span id="warningEnv"></span> environment. 
+            <span id="warningMessage"></span>
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <span class="label">Architecture:</span>
+                <span class="value">Frontend + Backend Containers</span>
+            </div>
+            <div class="status-item">
+                <span class="label">Environment:</span>
+                <span class="value" id="environment">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span class="label">Project ID:</span>
+                <span class="value" id="projectId">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span class="label">Frontend Service:</span>
+                <span class="value success">✓ Running (Nginx + Docker)</span>
+            </div>
+            <div class="status-item">
+                <span class="label">Backend Service:</span>
+                <span class="value" id="backendStatus"><span class="loading">⟳ Checking...</span></span>
+            </div>
+            <div class="status-item">
+                <span class="label">Deployment:</span>
+                <span class="value">Automated CI/CD</span>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button onclick="checkBackendHealth()">🏥 Backend Health</button>
+            <button onclick="checkBackendStatus()">📊 Backend Status</button>
+            <button onclick="fetchData()">📦 Fetch Data</button>
+            <button onclick="getEnvInfo()">ℹ️ Environment Info</button>
+        </div>
+
+        <div id="response">
+            <div class="response-title">API Response:</div>
+            <pre id="responseContent"></pre>
+        </div>
+
+        <div class="info-box">
+            <strong>🎯 Multi-Environment Ready:</strong> This application supports DEV, QA, and PROD environments 
+            with automatic environment detection and color-coded UI indicators.
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin + '/api';
+        let currentEnvironment = 'unknown';
+
+        async function makeRequest(endpoint, options = {}) {
+            const responseDiv = document.getElementById('response');
+            const responseContent = document.getElementById('responseContent');
+            
+            try {
+                responseContent.textContent = 'Loading...';
+                responseDiv.classList.add('show');
+                
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                const data = await response.json();
+                
+                displayResponse(data);
+                return data;
+            } catch (error) {
+                displayResponse({ 
+                    error: error.message,
+                    note: 'Make sure backend service is deployed and running'
+                });
+                return null;
+            }
+        }
+
+        function displayResponse(data) {
+            const responseContent = document.getElementById('responseContent');
+            responseContent.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function checkBackendHealth() {
+            makeRequest('/health');
+        }
+
+        async function checkBackendStatus() {
+            const data = await makeRequest('/status');
+            if (data && data.environment) {
+                updateEnvironmentDisplay(data.environment, data.project_id);
+            }
+        }
+
+        function fetchData() {
+            makeRequest('/data');
+        }
+
+        function getEnvInfo() {
+            makeRequest('/env-info');
+        }
+
+        function updateEnvironmentDisplay(env, projectId) {
+            currentEnvironment = env.toLowerCase();
+            
+            // Update environment values
+            document.getElementById('environment').textContent = env.toUpperCase();
+            document.getElementById('projectId').textContent = projectId || 'Unknown';
+            
+            // Update banner
+            const banner = document.getElementById('envBanner');
+            const envText = document.getElementById('envText');
+            banner.className = `env-banner env-${currentEnvironment}`;
+            envText.textContent = `${env.toUpperCase()} ENVIRONMENT`;
+            
+            // Remove spinner
+            const spinner = banner.querySelector('.spinner');
+            if (spinner) spinner.remove();
+            
+            // Show environment warnings
+            const warningBox = document.getElementById('warningBox');
+            const warningEnv = document.getElementById('warningEnv');
+            const warningMessage = document.getElementById('warningMessage');
+            
+            if (currentEnvironment === 'dev' || currentEnvironment === 'development') {
+                warningBox.classList.add('show');
+                warningEnv.textContent = 'DEVELOPMENT';
+                warningMessage.textContent = 'This environment is for active development. Data may be unstable and can be reset at any time.';
+            } else if (currentEnvironment === 'qa' || currentEnvironment === 'staging') {
+                warningBox.classList.add('show');
+                warningEnv.textContent = 'QA/STAGING';
+                warningMessage.textContent = 'This environment is for testing only. Do not use production data or credentials.';
+            } else if (currentEnvironment === 'prod' || currentEnvironment === 'production') {
+                warningBox.classList.remove('show');
+            } else {
+                warningBox.classList.add('show');
+                warningEnv.textContent = 'UNKNOWN';
+                warningMessage.textContent = 'Environment not properly configured. Please check app.yaml settings.';
+            }
+            
+            // Update backend status
+            const backendStatus = document.getElementById('backendStatus');
+            backendStatus.innerHTML = '<span class="success">✓ Running (Flask + Docker)</span>';
+        }
+
+        // Auto-check backend on page load
+        window.addEventListener('load', async () => {
+            // Wait a moment for page to settle
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            try {
+                const data = await makeRequest('/status');
+                if (data && data.environment) {
+                    updateEnvironmentDisplay(data.environment, data.project_id);
+                } else {
+                    // Backend not responding
+                    document.getElementById('envBanner').innerHTML = 
+                        '<span class="env-banner env-unknown">⚠️ Backend not responding - Deploy backend service</span>';
+                    document.getElementById('backendStatus').innerHTML = 
+                        '<span class="error">✗ Not responding</span>';
+                }
+            } catch (error) {
+                console.error('Failed to load environment:', error);
+                document.getElementById('envBanner').innerHTML = 
+                    '<span class="env-banner env-unknown">⚠️ Failed to connect to backend</span>';
+                document.getElementById('backendStatus').innerHTML = 
+                    '<span class="error">✗ Connection failed</span>';
+            }
+        });
+    </script>
+</body>
+</html>
